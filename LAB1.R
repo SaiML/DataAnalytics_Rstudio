@@ -1,4 +1,7 @@
 getwd()
+setwd("C:/Users/91983/OneDrive/Desktop/RPI-work/DA/repo/DataAnalyticsSpring2023_SainathReddy")
+# Cleaning memory
+rm(list=ls())
 
 library("readxl")
 
@@ -323,6 +326,8 @@ df_Europe_WE = subset(epi_2010,EPI_regions== "Europe" & GEO_subregion == "Wester
 df_region_E1  = epi_2010[EPI_regions== "Europe",]
 df_subregion_WE1 = epi_2010[GEO_subregion == "Western Europe",] 
 df_Europe_WE1 = epi_2010[EPI_regions== "Europe" & GEO_subregion == "Western Europe",]
+
+
 
 
 

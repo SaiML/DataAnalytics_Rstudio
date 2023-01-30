@@ -247,3 +247,97 @@ write.xlsx(mtcars,'Vehicles.xlsx')
 
 
 
+
+# Train test split
+set.seed(1)
+train <- sample(1:nrow(X_scaled_matrix ),nrow(X_scaled_matrix)/1.5)
+test <- (-train)
+
+
+
+x.test <- X_scaled_matrix [test,]
+x.train <- X_scaled_matrix [train,]
+y.test <- Y[test]
+y.train <- Y[train]
+# ```
+
+my.mse <- function(pred,act){
+  mse <- mean((pred-act)^2)
+  return(mse)
+}
+
+
+# Ridge Regression
+# Fit some models and save MSE:
+MSE <- c(NA)
+grid <- 10^seq(10,-2,length=100)
+ridge.mse <- glmnet(x.train,y.train,alpha=0,lambda=grid,thresh=1e-12)
+
+# Compute the MSE of each model
+for(i in 1:length(grid)){
+  ridge.pred.tmp <- predict(ridge.mse,s=grid[i],newx <- x.test)
+  MSE[i] <- my.mse(ridge.pred.tmp,y.test)
+}
+plot(MSE)
+
+lambda.star <- grid[which.min(MSE)]
+sprintf("Optimal value of lambda is %.1f",lambda.star)
+
+# Lasso Regression
+
+MSE.lasso <- c(NA)
+grid <- 10^seq(10,-2,length=100)
+lasso.mse <- glmnet(x.train,y.train,alpha=1,lambda=grid,thresh=1e-12)
+
+# Compute the MSE of each model
+for(i in 1:length(grid)){
+  lasso.pred.tmp <- predict(lasso.mse,s=grid[i],newx <- x.test)
+  MSE.lasso[i] <- my.mse(lasso.pred.tmp,y.test)
+}
+plot(MSE.lasso)
+
+lambda.star.lasso <- grid[which.min(MSE.lasso)]
+sprintf("Optimal value of lambda is %.1f",lambda.star.lasso)
+
+
+# evaluation metric
+
+# Compute R^2 from true and predicted values
+eval_results <- function(true, predicted) {
+  SSE <- sum((predicted - true)^2)
+  SST <- sum((true - mean(true))^2)
+  R_square <- 1 - SSE / SST
+  mse <- mean((predicted-true)^2)
+  
+  
+  # Model performance metrics
+  data.frame(
+    MSE = mse,
+    Rsquare = R_square
+  )
+  
+}
+
+#Ridge Ression
+# Prediction and evaluation on train data
+predictions_train <- predict(ridge.mse, s = lambda.star, newx = x.train)
+eval_results(y.train, predictions_train)
+
+# Prediction and evaluation on test data
+predictions_test <- predict(ridge.mse, s = lambda.star, newx =  x.test)
+eval_results(y.test, predictions_test)
+
+
+#Lasso Ression
+
+# Prediction and evaluation on train data
+predictions_train <- predict(lasso.mse, s = lambda.star.lasso, newx = x.train)
+eval_results(y.train, predictions_train)
+
+# Prediction and evaluation on test data
+predictions_test <- predict(lasso.mse , s = lambda.star.lasso, newx =  x.test)
+eval_results(y.test, predictions_test)
+
+
+
+
